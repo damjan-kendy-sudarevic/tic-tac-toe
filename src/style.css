@@ -11,6 +11,9 @@
 	--bg-color: #242424;
 	--text-color: #ffffffdd;
 
+	--cell-bg-color: #3a3a3a;
+	--cell-outline: 8px;
+
 	color-scheme: light dark;
 	color: var(--text-color);
 	background: var(--bg-color);
@@ -30,9 +33,34 @@ body {
   text-align: center;
 }
 
+.board {
+	display: grid;
+	clip-path: inset( calc(var(--cell-outline) / 2) );
+	grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+}
+
+.cell {
+	--text-opacity: 0.5;
+
+	width: 100px;
+	height: 100px;
+	user-select: none;
+	display: inline-block;
+
+	color: hsl(from var(--text-color) h s l / var(--text-opacity, 1));
+	background: var(--cell-bg-color);
+	outline: var(--cell-outline) solid var(--bg-color);
+	outline-offset: calc( var(--cell-outline) * -1 / 2 );
+	line-height: calc( 100px - var(--cell-outline) * 2 );
+
+	font-size: 80px;
+	font-weight: bold;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
 	  --bg-color: #cccccc;
 	  --text-color: #181818;
+	  --cell-bg-color: #333333;
   }
 }
