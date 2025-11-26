@@ -9,14 +9,19 @@
   -moz-osx-font-smoothing: grayscale;
 
 	--bg-color: #242424;
-	--text-color: #ffffffdd;
+	--text-color: #aaa;
 
+	--board-bg-color: #181818;
 	--cell-bg-color: #3a3a3a;
 	--cell-outline: 8px;
 
 	color-scheme: light dark;
 	color: var(--text-color);
 	background: var(--bg-color);
+}
+
+* {
+	user-select: none;
 }
 
 body {
@@ -27,10 +32,54 @@ body {
   min-height: 100vh;
 }
 
+#overlay {
+	display: none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	max-width: 100vw;
+	max-height: 100vh;
+	width: 100%;
+	height: 100%;
+	background: hsl(0 0% 0% / 0.8);
+	place-content: center;
+	text-align: center;
+	&:is(.visible) { display: block; }
+}
+
 #game {
   max-width: 320px;
   margin: 0 auto;
+	padding: 0.5rem;
   text-align: center;
+	background: var(--board-bg-color);
+}
+
+.scoreboard {
+	display: flex;
+	padding: 1rem;
+	justify-content: space-between;
+}
+
+.reset {
+	border: transparent;
+	background-color: transparent;
+	background-image: url(/public/reset.svg);
+	background-size: contain;
+	width: 64px;
+	height: 64px;
+	&:hover { cursor: pointer; filter: brightness(1.2); }
+}
+
+.score {
+	font-size: 1.25rem;
+	line-height: 1.1;
+	color: var(--text-color);
+	& > p {
+		margin: 0;
+		font-size: 2rem;
+		font-weight: bold;
+	}
 }
 
 .board {
@@ -40,22 +89,25 @@ body {
 }
 
 .cell {
-	--text-opacity: 0.5;
+	--text-color: hsl(0 0% 100% / 0.2);
 
 	width: 100px;
 	height: 100px;
 	user-select: none;
 	display: inline-block;
 
-	color: hsl(from var(--text-color) h s l / var(--text-opacity, 1));
+	color: var(--text-color);
 	background: var(--cell-bg-color);
-	outline: var(--cell-outline) solid var(--bg-color);
+	outline: var(--cell-outline) solid var(--board-bg-color);
 	outline-offset: calc( var(--cell-outline) * -1 / 2 );
-	line-height: calc( 100px - var(--cell-outline) * 2 );
+	line-height: calc( 100px - var(--cell-outline) * 4 );
 
-	font-size: 80px;
+	font-size: 100px;
 	font-weight: bold;
 }
+
+.player-x { --text-color: hsl(0 100% 70%); }
+.player-o { --text-color: hsl(130 75% 70%); }
 
 @media (prefers-color-scheme: light) {
   :root {

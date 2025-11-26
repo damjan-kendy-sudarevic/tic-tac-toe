@@ -2,12 +2,18 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <!-- <link rel="icon" type="image/svg+xml" href="/vite.svg" /> -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>tic-tac-toe</title>
   </head>
   <body>
     <main id="game"></main>
+    <div id="overlay">
+	    <h1>Round <span id="round">1</span><br>
+	        <span id="message"></span>
+	    </h1>
+	    <h2>Click anywhere to continue</h2>
+    </div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
