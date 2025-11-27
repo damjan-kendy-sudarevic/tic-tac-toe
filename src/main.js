@@ -1,5 +1,8 @@
 import './style.css';
-import { query as $ } from './util/query.js';
+import {
+	query as $,
+	queryAll as $$
+} from './util/query.js';
 
 /* Constants */
 
@@ -44,6 +47,92 @@ function createCells(rows, cols) {
 			.map(() => `<span class="cell"></span>`);
 }
 
+function resetCells() {
+	const Cells = $$('.cell');
+	Cells.forEach(Cell => {
+		Cell.textContent = '';
+		Cell.classList.remove(
+				...PLAYERS.map(Player => `player-${Player.symbol}`)
+		);
+		attachCellEventHandlers(Cell);
+	});
+}
+
+function resetGame() {
+	PLAYERS.forEach(Player => Player.score = 0);
+	round = 1; turn = 0;
+	resetCells();
+	render();
+}
+
+function checkPlayerWin(player) {
+	const BoardValue = [...$$('.cell')].map(Cell => Cell.textContent);
+	for (let Combination of WINNING_COMBINATIONS) {
+		if (Combination.every(CellIndex =>
+				BoardValue[CellIndex] === player)
+		) return true;
+	}
+	return false;
+}
+
+function checkDraw() {
+	return [...$$('.cell')].every(Cell => Cell.classList.length > 1);
+}
+
+function showOverlay(winner) {
+	const Overlay = $('#overlay');
+	Overlay.classList.add('visible');
+	Overlay.innerHTML = `
+		<h1>
+			Round ${round++}</br>
+			${winner ? `${winner} won!` : 'Draw!'}
+		</h1>
+		<h2>Click to continue</h2>
+	`.replace(/[\t\n]/g, '');
+
+	Overlay.addEventListener('click', (event) => {
+		event.target.classList.remove('visible');
+		event.target.innerHTML = '';
+		resetCells();
+		render();
+	}, { once: true });
+}
+
+function handleUpdate() {
+	const Player = PLAYERS[turn];
+	const IsWinCondition = checkPlayerWin(Player.symbol);
+	if (IsWinCondition) {
+		Player.score++;
+		showOverlay(Player.name);
+	} else {
+		const IsDraw = checkDraw();
+		if (IsDraw) showOverlay(null);
+	}
+	turn = ++turn % 2;
+}
+
+function onMouseEnterCell(event) {
+	event.target.textContent = PLAYERS[turn].symbol;
+}
+
+function onMouseLeaveCell(event) {
+	event.target.textContent = '';
+}
+
+function onCellClick(event) {
+	const cell = event.target;
+	cell.classList.add(`player-${PLAYERS[turn].symbol}`)
+	cell.removeEventListener('mouseenter', onMouseEnterCell);
+	cell.removeEventListener('mouseleave', onMouseLeaveCell);
+	handleUpdate();
+}
+
+function attachCellEventHandlers(cell) {
+	cell.addEventListener('mouseenter', onMouseEnterCell);
+	cell.addEventListener('mouseleave', onMouseLeaveCell);
+	cell.addEventListener('click', onCellClick, { once: true });
+}
+
 function render() {
 	$('#round-counter').textContent = round.toString();
 	const ScoreContainer = $('#score-container');
@@ -55,6 +144,7 @@ function render() {
 
 /* Main */
 
+document.addEventListener('contextmenu', event => event.preventDefault());
 document.addEventListener('DOMContentLoaded', () => 	{
 	$('#app').innerHTML = `
 		<div id="game">
@@ -81,6 +171,8 @@ document.addEventListener('DOMContentLoaded', () => 	{
 		</div>
 		<div id="overlay"></div>
 	`.replace(/[\t\n]/g, '');
-
 	render();
+
+	$$('.cell').forEach(attachCellEventHandlers);
+	$('#reset-button').addEventListener('click', resetGame);
 });
