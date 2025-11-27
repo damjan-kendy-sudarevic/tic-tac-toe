@@ -150,7 +150,7 @@ function render() {
 
 /* Main */
 
-document.addEventListener('contextmenu', event => event.preventDefault());
+document.addEventListener('contextmenu', onContextMenu);
 document.addEventListener('DOMContentLoaded', () => 	{
 	$('#app').innerHTML = `
 		<div id="game">
