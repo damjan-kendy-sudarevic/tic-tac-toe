@@ -119,6 +119,11 @@ function onMouseLeaveCell(event) {
 	event.target.textContent = '';
 }
 
+function onContextMenu(event) {
+	event.preventDefault();
+	return false;
+}
+
 function onCellClick(event) {
 	const cell = event.target;
 	cell.classList.add(`player-${PLAYERS[turn].symbol}`)
@@ -128,6 +133,7 @@ function onCellClick(event) {
 }
 
 function attachCellEventHandlers(cell) {
+	cell.addEventListener('contextmenu', onContextMenu);
 	cell.addEventListener('mouseenter', onMouseEnterCell);
 	cell.addEventListener('mouseleave', onMouseLeaveCell);
 	cell.addEventListener('click', onCellClick, { once: true });
