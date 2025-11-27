@@ -1,9 +1,27 @@
 import './style.css';
+import {
+	query as $,
+	queryAll as $$
+} from './util/query.js';
 
 /* Constants */
+
 const ROWS = 3;
-const COLS = 3;
-const PLAYERS = ['x', 'o'];
+const COLUMNS = 3;
+
+const PLAYERS = [
+	{
+		name: 'Player 1',
+		symbol: 'x',
+		score: 0,
+	},
+	{
+		name: 'Player 2',
+		symbol: 'o',
+		score: 0,
+	}
+];
+
 const WINNING_COMBINATIONS = [
 		/* Rows */
 		[0, 1, 2], [3, 4, 5], [6, 7, 8],
@@ -13,142 +31,154 @@ const WINNING_COMBINATIONS = [
 		[0, 4, 8], [2, 4, 6]
 ]
 
-/* Utility Functions */
-function createCell() {
-	const CellElement = document.createElement('span');
-	CellElement.classList.add('cell');
-	CellElement.value = null;
-	return CellElement;
+/* Global variables */
+
+let round = 1;
+let turn = 0;
+/*
+	0 = Player 1 (x)
+  1 = Player 2 (o)
+ */
+
+/* Functions */
+
+function createCells(rows, cols) {
+	return new Array(rows * cols).fill(null)
+			.map(() => `<span class="cell"></span>`);
 }
 
-function resetCell(cell) {
-	cell.classList.remove(...PLAYERS.map(player => 'player-' + player));
-	cell.textContent = '';
-	cell.value = null;
-}
-
-function registerCellEvents(board, cell) {
-	cell.addEventListener('mouseenter', () => {
-		if (cell.value !== null) return;
-		cell.textContent = PLAYERS[Turn];
-	});
-
-	cell.addEventListener('mouseleave', () => {
-		if (cell.value !== null) return;
-		cell.textContent = '';
-	});
-
-	cell.addEventListener('click', () => {
-		if (cell.value !== null) return;
-		cell.classList.add('player-' + PLAYERS[Turn]);
-		cell.value = PLAYERS[Turn];
-
-		for (let index in PLAYERS) {
-			const player = PLAYERS[index];
-			if (checkWinner(board, player)) {
-				displayOverlay(`Player ${Number.parseInt(index)+1} wins!`, () => {
-					Scoreboard[player]++;
-					updateScoreDisplay();
-					resetBoard(board);
-				});
-				break;
-			}
-		}
-
-		if (checkDraw(board)) {
-			displayOverlay('Draw!', () => resetBoard(board));
-		}
-
-		Turn = ++Turn % 2;
+function resetCells() {
+	const Cells = $$('.cell');
+	Cells.forEach(Cell => {
+		Cell.textContent = '';
+		Cell.classList.remove(
+				...PLAYERS.map(Player => `player-${Player.symbol}`)
+		);
+		attachCellEventHandlers(Cell);
 	});
 }
 
-function createScoreboard(root) {
-	const ScoreboardElement = document.createElement('div');
-	ScoreboardElement.classList.add('scoreboard');
-
-	const Score = Object.fromEntries(
-			PLAYERS.map(player => [player, 0])
-	);
-
-	Object.keys(Score).forEach((player, index) => {
-		const PlayerNameElement = document.createElement('span');
-		PlayerNameElement.classList.add('score', 'player-' + player);
-		PlayerNameElement.textContent = `Player ${index+1}`;
-		const ScoreElement = document.createElement('p');
-		ScoreElement.textContent = Score[player].toString();
-		ScoreElement.id = `${player}-score`;
-
-		PlayerNameElement.appendChild(ScoreElement);
-		ScoreboardElement.appendChild(PlayerNameElement);
-	})
-
-	const ResetButton = document.createElement('button');
-	ResetButton.classList.add('reset');
-	ResetButton.addEventListener('click', () => {
-		Object.keys(Score).forEach(player => Score[player] = 0);
-		updateScoreDisplay();
-		resetBoard(Board);
-		Turn = 0;
-	});
-	ScoreboardElement.insertBefore(ResetButton, ScoreboardElement.lastChild);
-
-	root.appendChild(ScoreboardElement);
-	return Score;
+function resetGame() {
+	PLAYERS.forEach(Player => Player.score = 0);
+	round = 1; turn = 0;
+	resetCells();
+	render();
 }
 
-function updateScoreDisplay() {
-	Object.entries(Scoreboard).forEach(([player, score]) => {
-		const ScoreElement = document.getElementById(`${player}-score`);
-		ScoreElement.textContent = score.toString();
-	});
-}
-
-function displayOverlay(message, onDismiss) {
-	const OverlayElement = document.querySelector('#overlay');
-	OverlayElement.classList.add('visible');
-
-	const RoundCount = Object.values(Scoreboard).reduce((acc, cur) => acc + cur, 1);
-	OverlayElement.querySelector('#round').textContent = RoundCount.toString();
-	OverlayElement.querySelector('#message').textContent = message;
-
-	OverlayElement.addEventListener('click', () => {
-		OverlayElement.classList.remove('visible');
-		onDismiss();
-	}, {once: true});
-}
-
-function createBoard(root) {
-	const BoardElement = document.createElement('div');
-	BoardElement.classList.add('board');
-
-	const Board = new Array(ROWS * COLS).fill(null).map(createCell);
-	Board.forEach(cell => registerCellEvents(Board, cell));
-
-	BoardElement.append(...Board);
-	root.appendChild(BoardElement);
-	return Board;
-}
-
-function resetBoard(board) {
-	board.forEach(resetCell);
-}
-
-function checkWinner(board, player) {
-	const values = board.map(cell => cell.value);
-	for (let combination of WINNING_COMBINATIONS) {
-		if (combination.every(index => values[index] === player))
-			return true;
+function checkPlayerWin(player) {
+	const BoardValue = [...$$('.cell')].map(Cell => Cell.textContent);
+	for (let Combination of WINNING_COMBINATIONS) {
+		if (Combination.every(CellIndex =>
+				BoardValue[CellIndex] === player)
+		) return true;
 	}
 	return false;
 }
 
-function checkDraw(board) {
-	return board.every(cell => cell.value !== null);
+function checkDraw() {
+	return [...$$('.cell')].every(Cell => Cell.classList.length > 1);
+}
+
+function showOverlay(winner) {
+	const Overlay = $('#overlay');
+	Overlay.classList.add('visible');
+	Overlay.innerHTML = `
+		<h1>
+			Round ${round++}</br>
+			${winner ? `${winner} won!` : 'Draw!'}
+		</h1>
+		<h2>Click to continue</h2>
+	`.replace(/[\t\n]/g, '');
+
+	Overlay.addEventListener('click', (event) => {
+		event.target.classList.remove('visible');
+		event.target.innerHTML = '';
+		resetCells();
+		render();
+	}, { once: true });
+}
+
+function handleUpdate() {
+	const Player = PLAYERS[turn];
+	const IsWinCondition = checkPlayerWin(Player.symbol);
+	if (IsWinCondition) {
+		Player.score++;
+		showOverlay(Player.name);
+	} else {
+		const IsDraw = checkDraw();
+		if (IsDraw) showOverlay(null);
+	}
+	turn = ++turn % 2;
+}
+
+function onMouseEnterCell(event) {
+	event.target.textContent = PLAYERS[turn].symbol;
+}
+
+function onMouseLeaveCell(event) {
+	event.target.textContent = '';
+}
+
+function onContextMenu(event) {
+	event.preventDefault();
+	return false;
+}
+
+function onCellClick(event) {
+	const cell = event.target;
+	cell.classList.add(`player-${PLAYERS[turn].symbol}`)
+	cell.removeEventListener('mouseenter', onMouseEnterCell);
+	cell.removeEventListener('mouseleave', onMouseLeaveCell);
+	handleUpdate();
+}
+
+function attachCellEventHandlers(cell) {
+	cell.addEventListener('contextmenu', onContextMenu);
+	cell.addEventListener('mouseenter', onMouseEnterCell);
+	cell.addEventListener('mouseleave', onMouseLeaveCell);
+	cell.addEventListener('click', onCellClick, { once: true });
+}
+
+function render() {
+	$('#round-counter').textContent = round.toString();
+	const ScoreContainer = $('#score-container');
+	for (let Player of PLAYERS) {
+		$(`.player-${Player.symbol} > .name`, ScoreContainer).textContent = Player.name;
+		$(`.player-${Player.symbol} > .score`, ScoreContainer).textContent = Player.score;
+	}
 }
 
 /* Main */
-const GameContainer = document.querySelector('#game');
-const Scoreboard = createScoreboard(GameContainer);
-const Board = createBoard(GameContainer);
-let Turn = 0; /* 0 = 'x', 1 = 'o' */
+
+document.addEventListener('contextmenu', onContextMenu);
+document.addEventListener('DOMContentLoaded', () => 	{
+	$('#app').innerHTML = `
+		<div id="game">
+			<div id="header">
+				<h1>Tic Tac Toe</h1>
+				<div id="scoreboard">
+					<h2>Round <span id="round-counter"></span></h2>
+					<div id="score-container">
+						<h3 class="player-x">
+							<span class="name"></span></br>
+							<span class="score"></span>
+						</h3>
+						<span id="reset-button"></span>
+						<h3 class="player-o">
+							<span class="name"></span></br>
+							<span class="score"></span>
+						</h3>
+					</div>				
+				</div>
+			</div>
+			<div id="board">
+				${createCells(ROWS, COLUMNS).join('')}
+			</div>
+		</div>
+		<div id="overlay"></div>
+	`.replace(/[\t\n]/g, '');
+	render();
+
+	$$('.cell').forEach(attachCellEventHandlers);
+	$('#reset-button').addEventListener('click', resetGame);
+});
