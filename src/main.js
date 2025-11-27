@@ -1,4 +1,5 @@
 import './style.css';
+import { query as $ } from './util/query.js';
 
 /* Constants */
 
@@ -27,6 +28,15 @@ const WINNING_COMBINATIONS = [
 		[0, 4, 8], [2, 4, 6]
 ]
 
+/* Global variables */
+
+let round = 1;
+let turn = 0;
+/*
+	0 = Player 1 (x)
+  1 = Player 2 (o)
+ */
+
 /* Functions */
 
 function createCells(rows, cols) {
@@ -34,24 +44,33 @@ function createCells(rows, cols) {
 			.map(() => `<span class="cell"></span>`);
 }
 
+function render() {
+	$('#round-counter').textContent = round.toString();
+	const ScoreContainer = $('#score-container');
+	for (let Player of PLAYERS) {
+		$(`.player-${Player.symbol} > .name`, ScoreContainer).textContent = Player.name;
+		$(`.player-${Player.symbol} > .score`, ScoreContainer).textContent = Player.score;
+	}
+}
+
 /* Main */
 
 document.addEventListener('DOMContentLoaded', () => 	{
-	document.querySelector('#app').innerHTML = `
+	$('#app').innerHTML = `
 		<div id="game">
 			<div id="header">
 				<h1>Tic Tac Toe</h1>
 				<div id="scoreboard">
-					<h2>Round <span id="round-counter">1</span></h2>
+					<h2>Round <span id="round-counter"></span></h2>
 					<div id="score-container">
-						<h3 id="p1-score" class="player-x">
-							<span class="name">${PLAYERS[0].name}</span></br>
-							<span class="score">${PLAYERS[0].score}</span>
+						<h3 class="player-x">
+							<span class="name"></span></br>
+							<span class="score"></span>
 						</h3>
 						<span id="reset-button"></span>
-						<h3 id="p2-score" class="player-o">
-							<span class="name">${PLAYERS[1].name}</span></br>
-							<span class="score">${PLAYERS[1].score}</span>
+						<h3 class="player-o">
+							<span class="name"></span></br>
+							<span class="score"></span>
 						</h3>
 					</div>				
 				</div>
@@ -62,4 +81,6 @@ document.addEventListener('DOMContentLoaded', () => 	{
 		</div>
 		<div id="overlay"></div>
 	`.replace(/[\t\n]/g, '');
+
+	render();
 });
