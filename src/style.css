@@ -67,7 +67,36 @@ body {
 
 #score-container > h3 {
 	color: var(--text-color);
-	& > .score { line-height: 1.5; }
+}
+
+.score {
+	line-height: 1.2;
+	font-size: 24px;
+}
+
+.name {
+	background: transparent;
+	border: transparent;
+	text-align: center;
+	font-weight: bold;
+	font-size: 20px;
+	color: inherit;
+	outline: none;
+
+	width: calc(var(--width) / 3 - var(--cell-gap));
+	border-bottom: 1px solid var(--text-color);
+	padding-bottom: 0.25em;
+	user-select: none;
+	cursor: pointer;
+
+	&:hover{
+		&:is(:read-only) { filter: brightness(1.2); }
+	}
+
+	&:not(:read-only) {
+		user-select: text;
+		cursor: text;
+	}
 }
 
 #reset-button {
