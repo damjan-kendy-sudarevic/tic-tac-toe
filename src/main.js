@@ -59,6 +59,7 @@ function resetCells() {
 }
 
 function resetGame() {
+	PLAYERS.forEach((Player, i) => Player.name = `Player ${i+1}`);
 	PLAYERS.forEach(Player => Player.score = 0);
 	round = 1; turn = 0;
 	resetCells();
@@ -88,7 +89,7 @@ function showOverlay(winner) {
 			${winner ? `${winner} won!` : 'Draw!'}
 		</h1>
 		<h2>Click to continue</h2>
-	`.replace(/[\t\n]/g, '');
+	`;
 
 	Overlay.addEventListener('click', (event) => {
 		event.target.classList.remove('visible');
@@ -139,11 +140,25 @@ function attachCellEventHandlers(cell) {
 	cell.addEventListener('click', onCellClick, { once: true });
 }
 
+function clearSelection() {
+	const selection = window.getSelection();
+	if (!selection) return;
+	if (selection.removeAllRanges) selection.removeAllRanges();
+	else if (selection.empty) selection.empty();
+}
+
+function attachNameChangeHandler(input, index) {
+	input.readOnly = true;
+	input.addEventListener('blur', () => { input.readOnly = true; clearSelection();	});
+	input.addEventListener('click', () => input.readOnly = false);
+	input.addEventListener('change', () => PLAYERS[index].name = input.value);
+}
+
 function render() {
 	$('#round-counter').textContent = round.toString();
 	const ScoreContainer = $('#score-container');
 	for (let Player of PLAYERS) {
-		$(`.player-${Player.symbol} > .name`, ScoreContainer).textContent = Player.name;
+		$(`.player-${Player.symbol} > .name`, ScoreContainer).value = Player.name;
 		$(`.player-${Player.symbol} > .score`, ScoreContainer).textContent = Player.score;
 	}
 }
@@ -160,12 +175,12 @@ document.addEventListener('DOMContentLoaded', () => 	{
 					<h2>Round <span id="round-counter"></span></h2>
 					<div id="score-container">
 						<h3 class="player-x">
-							<span class="name"></span></br>
+							<input type="text" maxlength="8" class="name"/></br>
 							<span class="score"></span>
 						</h3>
 						<span id="reset-button"></span>
 						<h3 class="player-o">
-							<span class="name"></span></br>
+							<input type="text" maxlength="8" class="name"/></br>
 							<span class="score"></span>
 						</h3>
 					</div>				
@@ -176,9 +191,10 @@ document.addEventListener('DOMContentLoaded', () => 	{
 			</div>
 		</div>
 		<div id="overlay"></div>
-	`.replace(/[\t\n]/g, '');
+	`;
 	render();
 
+	$$('.name').forEach(attachNameChangeHandler);
 	$$('.cell').forEach(attachCellEventHandlers);
 	$('#reset-button').addEventListener('click', resetGame);
 });
