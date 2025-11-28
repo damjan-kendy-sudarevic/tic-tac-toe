@@ -109,14 +109,18 @@ function handleUpdate() {
 		const IsDraw = checkDraw();
 		if (IsDraw) showOverlay(null);
 	}
+	$$('#score-container > h3').forEach(PlayerScore =>
+		PlayerScore.classList.toggle('turn'));
 	turn = ++turn % 2;
 }
 
-function onMouseEnterCell(event) {
+function onPointerEnterCell(event) {
+	if (event.pointerType !== 'mouse') return;
 	event.target.textContent = PLAYERS[turn].symbol;
 }
 
-function onMouseLeaveCell(event) {
+function onPointerLeaveCell(event) {
+	if (event.pointerType !== 'mouse') return;
 	event.target.textContent = '';
 }
 
@@ -127,16 +131,17 @@ function onContextMenu(event) {
 
 function onCellClick(event) {
 	const cell = event.target;
+	cell.textContent = PLAYERS[turn].symbol;
 	cell.classList.add(`player-${PLAYERS[turn].symbol}`)
-	cell.removeEventListener('mouseenter', onMouseEnterCell);
-	cell.removeEventListener('mouseleave', onMouseLeaveCell);
+	cell.removeEventListener('pointerenter', onPointerEnterCell);
+	cell.removeEventListener('pointerleave', onPointerLeaveCell);
 	handleUpdate();
 }
 
 function attachCellEventHandlers(cell) {
 	cell.addEventListener('contextmenu', onContextMenu);
-	cell.addEventListener('mouseenter', onMouseEnterCell);
-	cell.addEventListener('mouseleave', onMouseLeaveCell);
+	cell.addEventListener('pointerenter', onPointerEnterCell);
+	cell.addEventListener('pointerleave', onPointerLeaveCell);
 	cell.addEventListener('click', onCellClick, { once: true });
 }
 
@@ -196,5 +201,6 @@ document.addEventListener('DOMContentLoaded', () => 	{
 
 	$$('.name').forEach(attachNameChangeHandler);
 	$$('.cell').forEach(attachCellEventHandlers);
+	$('#score-container > h3').classList.add('turn');
 	$('#reset-button').addEventListener('click', resetGame);
 });
