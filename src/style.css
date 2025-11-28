@@ -67,6 +67,8 @@ body {
 
 #score-container > h3 {
 	color: var(--text-color);
+	&:is(.turn) { filter: drop-shadow(0 0 0.25rem currentColor); }
+	&:not(.turn) { filter: brightness(0.5);	}
 }
 
 .score {
