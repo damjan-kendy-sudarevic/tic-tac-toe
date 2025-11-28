@@ -1,5 +1,5 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -128,7 +128,7 @@ body {
 
 	width: var(--cell-size);
 	height: var(--cell-size);
-	line-height: calc( var(--cell-size) - var(--cell-gap) - 0.25em );
+	line-height: calc( var(--cell-size) - var(--cell-gap) - 0.5lh );
 	display: block;
 
 	background: var(--cell-background);
